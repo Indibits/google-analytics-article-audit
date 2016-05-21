@@ -12,9 +12,9 @@
 require_once realpath(dirname(__FILE__) . '/google-api-php-client/src/Google/autoload.php');
 
 session_start();
-global $analytica_db_version;
-$analytica_db_version = '1.0';
-class Analytica_Analytic
+global $ga_article_audit_db_version;
+$ga_article_audit_db_version = '1.0';
+class GA_Article_Audit
 {
     /**
      * Holds the values to be used in the fields callbacks
@@ -26,7 +26,7 @@ class Analytica_Analytic
      */
     public function __construct()
     {
-		register_activation_hook( __FILE__, array( $this, 'analytica_install' ) );
+		register_activation_hook( __FILE__, array( $this, 'ga_article_audit_install' ) );
         add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
         add_action( 'admin_init', array( $this, 'page_init' ) );
 		
@@ -47,14 +47,14 @@ class Analytica_Analytic
     {
         // This page will be under "Settings"
         $hook_suffix = add_utility_page(
-            'Analytica', 
-            'Analytica', 
+            'GA Article Audit', 
+            'GA Article Audit', 
             'manage_options', 
-            'analytica-admin-settings', 
+            'ga-article-audit-admin-settings', 
             array( $this, 'create_admin_page' ), 'dashicons-chart-area'
         );
 		/* This hook invokes the function only on our plugin administration screen */
-		add_action( 'admin_print_scripts-' . $hook_suffix, array( $this, 'analytica_admin_script') );
+		add_action( 'admin_print_scripts-' . $hook_suffix, array( $this, 'ga_article_audit_admin_script') );
     }
 
     /**
@@ -63,12 +63,12 @@ class Analytica_Analytic
     public function create_admin_page()
     {		
         // Set class property
-		$this->option = get_option( 'analytica_authentication_setting' );
-		$this->options = get_option( 'analytica_option_name' );
+		$this->option = get_option( 'ga_article_audit_authentication_setting' );
+		$this->options = get_option( 'ga_article_audit_option_name' );
 		
         ?>
         <div class="wrap">
-            <h2>Analytica Reports</h2>  
+            <h2>Google Analytics Article Audit Reports</h2>  
         <?php  if(!isset($this->option['authentication_code'])): ?> 			
  <a href='#' onClick='login();' id="loginText"'>Get Authentication </a>
     <a href="#" style="display:none" id="logoutText" target='myIFrame' onclick="myIFrame.location='https://www.google.com/accounts/Logout'; startLogoutPolling();return false;">logout </a>
@@ -77,8 +77,8 @@ class Analytica_Analytic
 	<?php //endif; ?>
 		<form method="POST" action="options.php">
 			<?php
-			   settings_fields( 'analytica-authentication-setting' );   
-			   do_settings_sections( 'analytica-authentication-setting' );
+			   settings_fields( 'ga-article-audit-authentication-setting' );   
+			   do_settings_sections( 'ga-article-audit-authentication-setting' );
 			   submit_button();
 			?>		  
 		</form>
@@ -99,7 +99,7 @@ class Analytica_Analytic
 		    if( isset( $this->option['authentication_code'] ) ){	
 			    
 				global $wpdb;
-				$resultset = json_decode( get_option('analytica_tokens') );
+				$resultset = json_decode( get_option('ga_article_audit_tokens') );
 				
 				if ($client->isAccessTokenExpired()) {
 					
@@ -110,29 +110,29 @@ class Analytica_Analytic
 					    $client->refreshToken( $refreshToken );
 					    $accessToken = $client->getAccessToken();
 						
-						$analytica_tokens = json_encode( array( 'time' => current_time( 'mysql' ), 'accessToken' =>  $accessToken, 'refreshToken' => $refreshToken ) );
+						$ga_article_audit_tokens = json_encode( array( 'time' => current_time( 'mysql' ), 'accessToken' =>  $accessToken, 'refreshToken' => $refreshToken ) );
 						
-					    update_option( 'analytica_tokens', $analytica_tokens );
+					    update_option( 'ga_article_audit_tokens', $ga_article_audit_tokens );
 					} else {
 						$client->authenticate( $this->option['authentication_code'] );
 						
 						$accessToken = $client->getAccessToken();
 						$refreshToken = $client->getRefreshToken();
 					
-						$analytica_tokens = json_encode( array( 'time' => current_time( 'mysql' ),'accessToken' =>  $accessToken, 'refreshToken' => $refreshToken ) );
-						update_option( 'analytica_tokens', $analytica_tokens );
+						$ga_article_audit_tokens = json_encode( array( 'time' => current_time( 'mysql' ),'accessToken' =>  $accessToken, 'refreshToken' => $refreshToken ) );
+						update_option( 'ga_article_audit_tokens', $ga_article_audit_tokens );
 					}
 				}
 			} else {
-				$resultset = json_decode(get_option('analytica_tokens'));
+				$resultset = json_decode(get_option('ga_article_audit_tokens'));
 			
 				if ($client->isAccessTokenExpired()) {
 					if( isset( $resultset ) ){
 						$refreshToken = $resultset->refreshToken;
 						$client->refreshToken( $refreshToken );
 						$accessToken = $client->getAccessToken();			
-						$analytica_tokens = json_encode( array( 'time' => current_time( 'mysql' ), 'accessToken' =>  $accessToken, 'refreshToken' => $refreshToken ) );
-						update_option( 'analytica_tokens', $analytica_tokens );
+						$ga_article_audit_tokens = json_encode( array( 'time' => current_time( 'mysql' ), 'accessToken' =>  $accessToken, 'refreshToken' => $refreshToken ) );
+						update_option( 'ga_article_audit_tokens', $ga_article_audit_tokens );
 					} else {
 						echo 'You need to reauthorize the application to get the analytics report.';
 					}
@@ -168,13 +168,13 @@ class Analytica_Analytic
 		<form method="POST" action="options.php">
 		<?php 
 			// This prints out all hidden setting fields
-			settings_fields( 'analytica-option-group' );   
-			do_settings_sections( 'analytica-admin-settings' );
+			settings_fields( 'ga-article-audit-option-group' );   
+			do_settings_sections( 'ga-article-audit-admin-settings' );
 			submit_button();
 			?>		  
 		</form>
 		<?php endif; ?>
-		<div class="analytica-report">
+		<div class="ga-article-audit-report">
 		    <?php
 			if( isset( $this->option['authentication_code'] ) && $this->option['authentication_code'] != '' ){ 
 				if( isset( $results ) ){
@@ -194,19 +194,19 @@ class Analytica_Analytic
     public function page_init()
     {   
 		/* Register Plugin Script */
-		wp_register_script( 'analytica', plugin_dir_url( __FILE__ ) . 'analytica.js', array( 'jquery' ) );
+		wp_register_script( 'ga-article-audit', plugin_dir_url( __FILE__ ) . 'ga-article-audit.js', array( 'jquery' ) );
 		
-		wp_localize_script( 'analytica', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234) );	
+		wp_localize_script( 'ga-article-audit', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234) );	
 		
 		register_setting(
-            'analytica-authentication-setting', // Option group
-            'analytica_authentication_setting', // Option name
+            'ga-article-audit-authentication-setting', // Option group
+            'ga_article_audit_authentication_setting', // Option name
             array( $this, 'sanitization' ) // sanitization
         );
 		
         register_setting(
-            'analytica-option-group', // Option group
-            'analytica_option_name', // Option name
+            'ga-article-audit-option-group', // Option group
+            'ga_article_audit_option_name', // Option name
             array( $this, 'sanitize' ) // Sanitize
         );
 		
@@ -214,21 +214,21 @@ class Analytica_Analytic
 		    'authentication_section',
 			'Authentication Section',
 			array( $this, 'print_authentication_section' ),
-			'analytica-authentication-setting'
+			'ga-article-audit-authentication-setting'
 		);
 		
         add_settings_section(
             'setting_section_id', // ID
-            'Analytica Custom Settings', // Title
+            'GA Article Audit Settings', // Title
             array( $this, 'print_section_info' ), // Callback
-            'analytica-admin-settings' // Page
+            'ga-article-audit-admin-settings' // Page
         );
 		
         add_settings_field(
             'authentication_code', 
             'Authentication Code', 
             array( $this, 'authentication_code_callback' ), 
-            'analytica-authentication-setting', 
+            'ga-article-audit-authentication-setting', 
             'authentication_section'
         );
 		
@@ -236,7 +236,7 @@ class Analytica_Analytic
             'profile_id', 
             'Chose Profile', 
             array( $this, 'profile_id_callback' ), 
-            'analytica-admin-settings', 
+            'ga-article-audit-admin-settings', 
             'setting_section_id'
         );
 
@@ -244,28 +244,28 @@ class Analytica_Analytic
 		    'start_date',
 			'Start Date',
 			array( $this, 'start_date_callback' ),
-			'analytica-admin-settings',
+			'ga-article-audit-admin-settings',
 			'setting_section_id'
 		);
 		add_settings_field(
 		    'end_date',
 			'End Date',
 			array( $this, 'end_date_callback' ),
-			'analytica-admin-settings',
+			'ga-article-audit-admin-settings',
 			'setting_section_id'
 		);
 		add_settings_field(
 		    'page_views',
 			'Page Views',
 			array( $this, 'page_views_callback' ),
-			'analytica-admin-settings',
+			'ga-article-audit-admin-settings',
 			'setting_section_id'
 		);
 		add_settings_field(
 		    'sorting_order',
 			'Sorting Order( Ascending / Descending )',
 			array( $this, 'page_view_order_callback' ),
-			'analytica-admin-settings',
+			'ga-article-audit-admin-settings',
 			'setting_section_id'
 		);
     }
@@ -337,13 +337,15 @@ class Analytica_Analytic
 		
 		$profiles = $this->parse_opt_groups($this->format_profile_call($accounts->getItems()));
       
-	    $html = '<select id="profile_id" name="analytica_option_name[profile_id]" value="' . $this->options['profile_id'] . '">' .  '<option value="">Choose a Profile</option>';
+	    $html = '<select id="profile_id" name="ga_article_audit_option_name[profile_id]" value="' . $this->options['profile_id'] . '">' .  '<option value="">Choose a Profile</option>';
 		
 		foreach($profiles as $profile):
 		   foreach($profile as $val) {
-			    if(get_option( 'analytica_option_name' )['profile_id'] == $val[0]['id'] )
+			    if(get_option( 'ga_article_audit_option_name' )['profile_id'] == $val[0]['id'] ){
 				    $html .= '<option value="'. $val[0]['id'] . '" selected >' . $val[0]['name'] . '</option>';
+} else{
 				$html .= '<option value="'. $val[0]['id'] . '">' . $val[0]['name'] . '</option>';
+}
 			}
 		endforeach;
 		
@@ -412,7 +414,7 @@ class Analytica_Analytic
     public function authentication_code_callback()
     {
         printf(
-            '<input type="text" id="authentication_code" name="analytica_authentication_setting[authentication_code]" value="%s" />',
+            '<input type="text" id="authentication_code" name="ga_article_audit_authentication_setting[authentication_code]" value="%s" />',
             isset( $this->option['authentication_code'] ) ? esc_attr( $this->option['authentication_code']) : ''
         );
     }
@@ -420,7 +422,7 @@ class Analytica_Analytic
 	public function start_date_callback(){
 		$start_date = $this->options['start_date'] ? date('m/d/Y', strtotime($this->options['start_date'])) : date("m/d/Y", strtotime("-1 year"));
 		
-		printf('<input class="alignleft" name="analytica_option_name[start_date] type="text" id="startdate" value="' . $start_date . '">',
+		printf('<input class="alignleft" name="ga_article_audit_option_name[start_date] type="text" id="startdate" value="' . $start_date . '">',
 		    isset( $this->options['start_date'] ) ? esc_attr( date('mm/dd/yyyy',strtotime($this->options['start_date']))) : ''
 		);
 	}
@@ -428,30 +430,30 @@ class Analytica_Analytic
 	  
 	    $end_date = $this->options['end_date'] ? date('m/d/Y', strtotime($this->options['end_date'])) : date("m/d/Y");
 		
-		printf('<input type="text" name="analytica_option_name[end_date]"  value="' . $end_date . '" id="enddate">',
+		printf('<input type="text" name="ga_article_audit_option_name[end_date]"  value="' . $end_date . '" id="enddate">',
 		    isset( $this->options['end_date'] ) ? esc_attr( date('mm/dd/yyyy',strtotime($this->options['end_date']))) : ''
 		);
 	}
 	public function page_views_callback(){
-		if(get_option( 'analytica_option_name' )['page_views'] != ''){
-			printf ('<input type="number" class="small-text" name="analytica_option_name[page_views]" id="page_views" min="1" max="100" value="' . get_option( 'analytica_option_name' )['page_views'] . '" >',
+		if(get_option( 'ga_article_audit_option_name' )['page_views'] != ''){
+			printf ('<input type="number" class="small-text" name="ga_article_audit_option_name[page_views]" id="page_views" min="1" max="100" value="' . get_option( 'ga_article_audit_option_name' )['page_views'] . '" >',
 				isset( $this->options['page_views'] ) ? esc_attr( $this->options['page_views']) : ''
 			);
 		} else{
-			printf ('<input type="number" class="small-text" name="analytica_option_name[page_views]" id="page_views" min="1" max="100" value="10" >',
+			printf ('<input type="number" class="small-text" name="ga_article_audit_option_name[page_views]" id="page_views" min="1" max="100" value="10" >',
 				isset( $this->options['page_views'] ) ? esc_attr( $this->options['page_views']) : ''
 			);
 		}
 	}
 	public function page_view_order_callback(){
 		$html = '';
-		$html .= '<select id="sorting_order" name="analytica_option_name[sorting_order]" value="' . get_option( 'analytica_option_name' )['sorting_order'] . '">';
-		if( get_option( 'analytica_option_name' )['sorting_order'] == 'ascending'  ){
+		$html .= '<select id="sorting_order" name="ga_article_audit_option_name[sorting_order]" value="' . get_option( 'ga_article_audit_option_name' )['sorting_order'] . '">';
+		if( get_option( 'ga_article_audit_option_name' )['sorting_order'] == 'ascending'  ){
 	     	$html .= '<option id="ascending" value="ascending" selected>Ascending</option>';
      	} else {
 			$html .= '<option id="ascending" value="ascending">Ascending</option>';
 		}
-		if( get_option( 'analytica_option_name' )['sorting_order'] == 'descending'  ){
+		if( get_option( 'ga_article_audit_option_name' )['sorting_order'] == 'descending'  ){
 	     	$html .= '<option id="descending" value="descending" selected>Descending</option>';
      	} else {
 			$html .= '<option id="descending" value="descending">Descending</option>';
@@ -462,9 +464,9 @@ class Analytica_Analytic
 		);
 	}
 	
-	public function analytica_admin_script(){
+	public function ga_article_audit_admin_script(){
 		/* Link our already registered script to a page */
-		wp_enqueue_script( 'analytica');
+		wp_enqueue_script( 'ga-article-audit');
 	}
 	
 	
@@ -509,26 +511,26 @@ class Analytica_Analytic
 
 	 public function getResults(&$analytics, &$profileId, &$page = 1) {
 	    
-		if( isset( get_option( 'analytica_option_name' )['start_date'] ) && preg_match('~[0-9]~', get_option( 'analytica_option_name' )['start_date'] ) ){
-			$start_date = date('Y-m-d',strtotime(get_option( 'analytica_option_name' )['start_date']));
+		if( isset( get_option( 'ga_article_audit_option_name' )['start_date'] ) && preg_match('~[0-9]~', get_option( 'ga_article_audit_option_name' )['start_date'] ) ){
+			$start_date = date('Y-m-d',strtotime(get_option( 'ga_article_audit_option_name' )['start_date']));
 		} else {
 			$start_date = '7daysAgo';
 		}
 		
-		if( isset( get_option( 'analytica_option_name' )['end_date'] ) && preg_match('~[0-9]~', get_option( 'analytica_option_name' )['end_date'] ) ){
-			$end_date = date('Y-m-d',strtotime(get_option( 'analytica_option_name' )['end_date']));
+		if( isset( get_option( 'ga_article_audit_option_name' )['end_date'] ) && preg_match('~[0-9]~', get_option( 'ga_article_audit_option_name' )['end_date'] ) ){
+			$end_date = date('Y-m-d',strtotime(get_option( 'ga_article_audit_option_name' )['end_date']));
 		} else{
 			$end_date = 'today';
 		}
 	
-		if( isset( get_option( 'analytica_option_name' )['sorting_order'] ) && get_option( 'analytica_option_name' )['sorting_order'] == 'ascending' ){
+		if( isset( get_option( 'ga_article_audit_option_name' )['sorting_order'] ) && get_option( 'ga_article_audit_option_name' )['sorting_order'] == 'ascending' ){
 			$order = 'ga:pageViews';
 		} else{
 			$order = '-ga:pageViews';
 		}
 	
-		if( isset( get_option( 'analytica_option_name' )['page_views'] ) && get_option( 'analytica_option_name' )['page_views'] ){
-			$filter = 'ga:pageViews<' . get_option( 'analytica_option_name' )['page_views'];
+		if( isset( get_option( 'ga_article_audit_option_name' )['page_views'] ) && get_option( 'ga_article_audit_option_name' )['page_views'] ){
+			$filter = 'ga:pageViews<' . get_option( 'ga_article_audit_option_name' )['page_views'];
 		} else{
 			$filter = 'ga:pageViews<=10';
 		}
@@ -791,22 +793,22 @@ accessToken = '<?php echo  $accessToken; ?>';
 	    }
 	}
 	
-	public function analytica_install(){
+	public function ga_article_audit_install(){
 
 		global $wpdb;
-		global $analytica_db_version;	
+		global $ga_article_audit_db_version;	
 		
-        delete_option( 'analytica_tokens' );
-		delete_option( 'analytica_option_name' );
-		delete_option( 'analytica_authentication_setting' );
-		add_option( 'analytica_db_version', $analytica_db_version );
+        delete_option( 'ga_article_audit_tokens' );
+		delete_option( 'ga_article_audit_option_name' );
+		delete_option( 'ga_article_audit_authentication_setting' );
+		add_option( 'ga_article_audit_db_version', $ga_article_audit_db_version );
 	}
 	
-	public static function analytica_uninstall()
+	public static function ga_article_audit_uninstall()
     {
-		delete_option( 'analytica_tokens' );
-		delete_option( 'analytica_option_name' );
-		delete_option( 'analytica_authentication_setting' );
+		delete_option( 'ga_article_audit_tokens' );
+		delete_option( 'ga_article_audit_option_name' );
+		delete_option( 'ga_article_audit_authentication_setting' );
 		
     }
 
@@ -819,6 +821,6 @@ accessToken = '<?php echo  $accessToken; ?>';
 }
 
 if( is_admin() ){
-    $analytica = new Analytica_Analytic();
-	register_uninstall_hook(__FILE__, array( 'Analytica_Analytic', 'analytica_uninstall' ));
+    $ga_article_audit = new GA_Article_Audit();
+	register_uninstall_hook(__FILE__, array( 'GA_Article_Audit', 'ga_article_audit_uninstall' ));
 }
