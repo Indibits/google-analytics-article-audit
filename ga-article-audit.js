@@ -1,4 +1,4 @@
-jQuery('document').ready(function(){	
+jQuery('document').ready(function(){
 	if ( typeof ajax_object === 'undefined' ){
 		console.log("false");
 	}
@@ -26,7 +26,7 @@ jQuery('document').ready(function(){
 					} else{
 				        page_number = parseInt(jQuery('#table-paging').html())+1;
 					}
-					break; 
+					break;
                 default:
                     page_number = 1;
                     break;
@@ -41,25 +41,25 @@ jQuery('document').ready(function(){
 			    data = JSON.parse(data, function(k,v){
 				  return v;
 			    });
-				
+
 				if( page_number !== 1 ){
 				    jQuery('.first').replaceWith('<a class="first-page" href="#"><span class="screen-reader-text">First page</span><span aria-hidden="true">&laquo;</span></a>');
-				
+
 					jQuery('.prev').replaceWith('<a class="prev-page" href="#"><span class="screen-reader-text">Previous page</span><span class="tablenav-pages-navspan" aria-hidden="true">&lsaquo;</span></a>');
 				} else {
 					jQuery('.prev-page').replaceWith('<span class="prev tablenav-pages-navspan" aria-hidden="true">&lsaquo;</span>');
 		            jQuery('.first-page').replaceWith('<span class="first" aria-hidden="true">&laquo;</span>');
 				}
-				
+
 				if( page_number === parseInt(jQuery('#total-pages').html()) ){
 					jQuery('.next-page').replaceWith('<span class="next tablenav-pages-navspan" aria-hidden="true">&rsaquo;</span>');
 					jQuery('.last-page').replaceWith('<span class="last" aria-hidden="true">&raquo;</span>');
 				} else {
 					jQuery('.next').replaceWith('<a class="next-page" href="#"><span class="screen-reader-text">Next page</span><span class="tablenav-pages-navspan" aria-hidden="true">&rsaquo;</span></a>');
-					
+
 					jQuery('.last').replaceWith('<a class="last-page" href="#"><span class="screen-reader-text">Last page</span><span aria-hidden="true">&raquo;</span></a>');
 				}
-				
+
 			    //console.log(data);
 				posts = data['rows'];
 				//console.log(posts.length);
@@ -71,26 +71,28 @@ jQuery('document').ready(function(){
 						jQuery('.report-table tbody tr:eq('+ i +') td:eq(' + j + ')').html(posts[i][j]);
 					}
 				}
-				if( posts.length < 10 ){
-					for( var i=posts.length; i<10; i++){
-						//jQuery('.report-table tbody tr:eq('+ i +') th.check-column input.select-post').attr('disabled', true );
-						//jQuery('.report-table tbody tr:eq('+ i +') th.check-column input.select-post').hide();
-						for( var j = 0; j < 7; j++ ){
-						    jQuery('.report-table tbody tr:eq('+ i +') td:eq(' + j + ')').html('');
-					    }
-					}
-				}		
-				
-				
-			
-				
+				if( posts.length < 10 &&  page_number === parseInt(jQuery('#total-pages').html()) ){
+				for( var i=posts.length; i<10; i++){
+					//jQuery('.report-table tbody tr:eq('+ i +') th.check-column input.select-post').attr('disabled', true );
+					jQuery('.report-table tbody tr:eq('+ i +') th.check-column input.select-post').hide();
+					for( var j = 0; j < 7; j++ ){
+							jQuery('.report-table tbody tr:eq('+ i +') td:eq(' + j + ')').html('');
+						}
+				}
+			} else {
+				jQuery('.report-table tbody tr th.check-column input.select-post').show();
+			}
+
+
+
+
 				jQuery('#table-paging').text(page_number);
 		   });
-		  } 
+		  }
 	});
 	jQuery('#draft').click( function( event ){
 		event.preventDefault();
-		
+
 		var selectedPosts = [];
 		jQuery('input[type="checkbox"]:checked').each(function(){
 			//console.log(jQuery('#' + jQuery(this).val()).is('td'));
@@ -141,3 +143,4 @@ function changeStatus(post){
 		}
 	});
 }
+
