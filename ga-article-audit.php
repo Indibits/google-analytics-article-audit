@@ -2,7 +2,7 @@
 /**
 * @wordpress-plugin
 * Plugin Name:       Google Analytics Article Audit
-* Plugin URI:        http://indibits.com/wordpress/plugins/ga-article-audit
+* Plugin URI:        http://indibits.com/products/wordpress-plugins/google-analytics-article-audit/
 * Description:       A WordPress plugin to help you audit your articles posted on your WordPress blog with the help of Google Analytics data of the website.
 * Version:           1.0
 * Author:            Indibits
