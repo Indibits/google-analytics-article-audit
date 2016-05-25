@@ -194,7 +194,7 @@ class GA_Article_Audit
     public function page_init()
     {   
 		/* Register Plugin Script */
-		wp_register_script( 'ga-article-audit', plugin_dir_url( __FILE__ ) . 'ga-article-audit.js', array( 'jquery' ) );
+		wp_register_script( 'ga-article-audit', plugin_dir_url( __FILE__ ) . 'js/ga-article-audit.js', array( 'jquery' ) );
 		
 		wp_localize_script( 'ga-article-audit', 'ajax_object', array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234) );	
 		
@@ -814,8 +814,8 @@ accessToken = '<?php echo  $accessToken; ?>';
 
 	public function popup_script() {
 		wp_enqueue_script( 'jquery-ui-datepicker', array( 'jquery' ) );
-		wp_enqueue_script( 'popup', plugin_dir_url( __FILE__ ) . 'popup.js', array( 'jquery' ));
-		wp_register_style('jquery-ui', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css');
+		wp_enqueue_script( 'popup', plugin_dir_url( __FILE__ ) . 'js/popup.js', array( 'jquery' ));
+		wp_register_style('jquery-ui', plugin_dir_url( __FILE__ ) . 'style/jquery-ui.css');
         wp_enqueue_style( 'jquery-ui' ); 
    }
 }
