@@ -4,10 +4,11 @@ Tags: Google,Analytics,Google Analytics,SEO,Search Engine Optimization
 Donate link: http://indibits.com/contact
 Requires at least: 3.5
 Tested up to: 4.5.2
+Stable tag: trunk
 License: GNU GPL 3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.en.html
 
-WP Article Audit using Google Analytics — A WordPress plugin to help you audit your articles posted on your WordPress blog with the help of Google Analytics data of the website.
+A WordPress plugin to help you audit your articles posted on your WordPress blog with the help of Google Analytics data of the website.
 
 == Description ==
 Many articles on your website do not get any traffic over a period of time. Some SEO experts suggest removing those articles from the website for a better SEO. This plugin analyses the data of the website on Google Analytics and suggests you the articles which you may consider to remove. The plugin also provides a good interface to easily remove those articles.
